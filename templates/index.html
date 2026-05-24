@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de mi Negocio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">🏪 Sistema de Control Comercial</span>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        
+        <div class="row mb-4 text-center">
+            <div class="col-md-6 mb-3">
+                <div class="card bg-success text-white shadow-sm p-3">
+                    <h3>Dinero Generado (Ventas)</h3>
+                    <p class="fs-2 fw-bold">${{ "%.2f"|format(ingresos) }}</p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card bg-danger text-white shadow-sm p-3">
+                    <h3>Dinero que le Deben (Cuentas por Cobrar)</h3>
+                    <p class="fs-2 fw-bold">${{ "%.2f"|format(deudas) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>📦 Inventario de Productos</h2>
+                <span class="badge bg-secondary">Ordenados por más vendidos</span>
+            </div>
+            
+            {% if not productos %}
+                <div class="alert alert-info text-center">No hay productos registrados todavía.</div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nombre del Producto</th>
+                                <th>Precio de Venta</th>
+                                <th>Stock Disponible</th>
+                                <th>Unidades Vendidas</th>
+                                <th>Rendimiento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in productos %}
+                            <tr>
+                                <td class="fw-bold">{{ p.nombre }}</td>
+                                <td>${{ "%.2f"|format(p.precio_venta) }}</td>
+                                <td>
+                                    {% if p.stock == 0 %}
+                                        <span class="badge bg-danger">Agotado</span>
+                                    {% else %}
+                                        {{ p.stock }} uds
+                                    {% endif %}
+                                </td>
+                                <td>{{ p.ventas_totales }}</td>
+                                <td>
+                                    {% if p.ventas_totales >= 15 %}
+                                        <span class="badge bg-warning text-dark">🔥 Más Vendido</span>
+                                    {% elif p.ventas_totales == 0 %}
+                                        <span class="badge bg-light text-muted">❄️ Sin Salida</span>
+                                    {% else %}
+                                        <span class="badge bg-info text-dark">Normal</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm p-3">
+                    <h3 class="border-bottom pb-2">👥 Estado de Clientes</h3>
+                    {% if not clientes %}
+                        <p class="text-muted text-center py-3">No hay clientes registrados.</p>
+                    {% else %}
+                        <ul class="list-group">
+                            {% for c in clientes %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ c.nombre }}</h6>
+                                    <small class="text-muted">📱 {{ c.telefono if c.telefono else 'Sin Teléfono' }}</small>
+                                </div>
+                                <div class="text-end">
+                                    {% if c.estado_pago == 'Deudor' %}
+                                        <span class="badge bg-danger block mb-1">Debe: ${{ "%.2f"|format(c.deuda) }}</span>
+                                    {% else %}
+                                        <span class="badge bg-primary block mb-1">Al día</span>
+                                    {% endif %}
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm p-3">
+                    <h3 class="border-bottom pb-2">🚚 Directorio de Proveedores</h3>
+                    {% if not proveedores %}
+                        <p class="text-muted text-center py-3">No hay proveedores registrados.</p>
+                    {% else %}
+                        <ul class="list-group">
+                            {% for prov in proveedores %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1 fw-bold">{{ prov.nombre }}</h6>
+                                    <small class="text-success fw-bold">📦 {{ prov.rubro }}</small>
+                                </div>
+                                <p class="mb-0 text-muted small">📱 Teléfono: {{ prov.telefono if prov.telefono else 'No registrado' }}</p>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
