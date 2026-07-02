@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NEZ - GESTOR FINANCIERO</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background-image: url("{{ url_for('static', filename='images/fondo1.png') }}"); 
+                background-size: cover;
+                background-attachment: fixed;
+                background-position: center;
+                background-repeat: no-repeat;
+                color: #ffffff;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+    
+            .card-custom {
+                background-color: rgb(48, 48, 54) !important; /* Bajamos la opacidad para que sea más transparente */
+                border: 1px solid rgb(0, 0, 0) !important; /* Borde sutil de cristal */
+                backdrop-filter: blur(12px) !important; /* Efecto esmerilado para que el texto se lea nítido */
+                -webkit-backdrop-filter: blur(12px) !important;
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+            }
+
+            .btn-white {
+                background-color:rgba(55, 60, 81, 0.35);
+            }
+
+            .btn-outline-white{
+                background: rgb(6, 6, 7);
+            }
+
+            .btn-outline-danger{
+                background: #000000; 
+            }
+            .table-secondary{
+                background-color: rgb(48, 48, 54);
+            }
+    
+            .text-neon-cyan { color: #000000;
+            }
+            .text-neon-danger { color: #6e0000;  
+            }
+            .text-neon-orange { color: #ffaa50; 
+            }
+
+            .text-neon-purple { color: #000000;  
+
+            }
+            .btn-neon-orange { color: #ffaa50; 
+            }
+            .btn-neon-info { color: #ffffff;
+            }
+        </style>
+        
+    </head>
+    <body>
+
+        <div class="container py-4">
+            <div class="card card-custom d-flex justify-content-between align-items-center mb-2 p-3 rounded shadow-sm">
+                <h2 class="fw-bold m-0 text-neon-purple" style="letter-spacing: 1px;">🚀 NEZ - GESTOR FINANCIERO</h2>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('menu_seleccion') }}" class="btn btn-outline-white text-white fw-bold">Menu</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-white text-white fw-bold">CERRAR SESIÓN</a>
+                </div>
+            </div>
+        </div>
+
+        <div class=" row g-6 mb-4">
+            <div class="col-md-6">
+                <div class="card card-custom col-md-12 p-4 mb-5 shadow ">
+                    <h5 class="fw-bold text-neon-cyan mb-4">📦 Entrada de Mercancía e Inventario Inteligente</h5>
+                    <form action="{{ url_for('agregar_producto_finanzas') }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label small text-white">Nombre del Producto</label>
+                            <input type="text" name="nombre" class="form-control bg-secondary text-white border-0" placeholder="Ej: Harina Pan" required>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label small text-white">Moneda de Compra</label>
+                                <select name="moneda_compra" id="moneda_compra" class="form-select bg-secondary text-white border-0" onchange="alternarMoneda()" required>
+                                    <option value="USD">💵 Dólares ($)</option>
+                                    <option value="BS">🇻🇪 Bolívares (Bs)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-white">Tasa de la Factura (Bs)</label>
+                                <input type="number" step="0.01" name="tasa_factura" id="tasa_factura" class="form-control bg-secondary text-white border-0" value="1.0" readonly oninput="calcularPreciosRapido()" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-white">Proveedor</label>
+                                <select name="proveedor_id" class="form-select bg-secondary text-white border-0" required>
+                                    <option value="">Selecciona...</option>
+                                    {% for p in proveedores %}
+                                        <option value="{{ p.id }}">{{ p.nombre }}</option>
+                                    {% endfor %}
+                              </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label small text-white">Monto Total Factura</label>
+                                <input type="number" step="0.01" name="total_factura" id="total_factura" class="form-control bg-secondary text-white border-0" placeholder="0.00" oninput="calcularPreciosRapido()" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-white">Stock Comprado (Unidades)</label>
+                                <input type="number" name="stock" id="stock" class="form-control bg-secondary text-white border-0" placeholder="Ej: 24" oninput="calcularPreciosRapido()" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small text-white">% Margen de Ganancia</label>
+                                <input type="number" step="0.1" name="porcentaje_ganancia" id="porcentaje_ganancia" class="form-control bg-secondary text-white border-0" placeholder="Ej: 30" oninput="calcularPreciosRapido()" required>
+                            </div>
+                        </div>
+                    
+
+                        <div class="p-3 mb-4 rounded border border-secondary" style="background-color: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px);">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small text-white">Costo Unitario (En Dólares):</span>
+                                <span class="fw-bold text-white" id="preview_costo">$0.00 USD</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small text-white">Precio sugerido de venta (En Dólares):</span>
+                                <span class="fw-bold text-white fs-4" id="preview_venta">$0.00 USD</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-outline-white text-white w-100 fw-bold py-2">💾 REGISTRAR PRODUCTO Y CALCULAR PRECIOS</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card card-custom p-4 mb-3 shadow">
+                    <div class="d-flex justify-content-between align-items-center mb-4">          
+                        <h5 class="fw-bold text-neon-cyan m-0">📉 Cuentas por Pagar</h5>
+                        <button class="btn btn-sm btn-outline-white text-white fw-bold px-3" data-bs-toggle="modal" data-bs-target="#modalCuentaPagar">
+                            ➕ Agregar
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-y-auto" style="max-height: 400px;">
+                        {% if cuentas_pagar %}
+                            {% for cuenta in cuentas_pagar %}
+                            {% if not cuenta.pagado %}
+                                <div class="p-3 mb-3 border border-secondary rounded bg-opacity-10 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-white fs-6">📦 {{ cuenta.proveedor.nombre }}</span>
+                                        <span class="badge text-white fs-6">Debe: ${{ "%.2f"|format(cuenta.monto) }}</span>
+                                    </div>
+                            
+                                    <small class="text-white-50 d-block mt-2">Detalle: {{ cuenta.descripcion }}</small>
+                            
+                                    {% if cuenta.fecha_limite %}
+                                        <small class="text-white d-block mt-1">Vence: {{ cuenta.fecha_limite }}</small>
+                                    {% endif %}
+
+                                    <button type="button" class="btn btn-sm btn-outline-white text-white mt-3 w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#modalAbonar{{ cuenta.id }}">
+                                        💸 Abonar / Liquidar
+                                    </button>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% else %}
+                            <p class="text-center text-white-50 my-4 small">🎉 ¡Felicidades! No tienes deudas vigentes.</p>
+                        {% endif %}
+                    </div>  
+                </div>
+            </div> 
+            {% if cuentas_pagar %}
+                {% for cuenta in cuentas_pagar %}
+                {% if not cuenta.pagado %}
+                    <div class="modal fade" id="modalAbonar{{ cuenta.id }}" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+                        <div class="modal-dialog modal-dialog-centered modal-sm">
+                            <div class="modal-content bg-dark text-white" style="border: 1px solid rgba(48, 48, 54);">
+                                <div class="modal-header py-2" style="border-bottom: 1px solid rgba(48, 48, 54);">
+                                    <h6 class="modal-title text-white small fw-bold">PAGAR A: {{ cuenta.proveedor.nombre }}</h6>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <form action="{{ url_for('abonar_cuenta_pagar', id=cuenta.id) }}" method="POST">
+                                    <div class="modal-body bg-dark text-white" style="font-size: 0.85rem;">
+                                        <p class="text-white-50 mb-3">Saldo pendiente: <b class="text-white">${{ "%.2f"|format(cuenta.monto) }} USD</b></p>
+                                
+                                        <div class="mb-2">
+                                            <label class="form-label text-white-50 mb-1">¿Cómo deseas pagar?</label>
+                                            <select name="moneda_pago" id="monedaPago{{ cuenta.id }}" class="form-select form-select-sm bg-secondary text-white border-0" onchange="toggleTasaPago('{{ cuenta.id }}')" required>
+                                                <option value="USD" selected>Dólares ($)</option>
+                                                <option value="BS">Bolívares (Bs)</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label class="form-label text-white-50 mb-1">Monto a abonar</label>
+                                            <input type="number" step="0.01" name="monto_abonado" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="0.00" required>
+                                        </div>
+
+                                        <div class="mb-2" id="contenedorTasaPago{{ cuenta.id }}" style="display: none;">
+                                            <label class="form-label text-white mb-1">Tasa de cambio (Bs por $)</label>
+                                            <input type="number" step="0.01" name="tasa_pago" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="Ej: 45.60">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer py-1" style="border-top: 1px solid rgba(48, 48, 54);">
+                                        <button type="button" class="btn btn-sm btn-outline-white text-white" data-bs-dismiss="modal">Cerrar</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-white text-white">Procesar Pago</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card card-custom p-4 shadow">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold text-neon-cyan m-0">🤝 Directorio y Control de Proveedores</h5>
+                        <button class="btn btn-sm btn-outline-white text-white fw-bold px-3" data-bs-toggle="modal" data-bs-target="#modalProveedor">
+                            ➕ AGREGAR
+                        </button>
+                    </div>
+
+                    <div class="table-responsive" style="max-width: 1000px; margin: 0 auto;"> 
+                        <table class="table table-dark table-hover table-sm small align-middle m-0" style="background-color: #1a1d24; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <thead>
+                            <tr style="border-bottom: 2px solid rgba(0, 242, 254, 0.3);"> 
+                               <th class="py-2 text-white px-3">Nombre/Razón Social</th>
+                               <th class="py-2 text-white px-3">Rubro</th> 
+                               <th class="py-2 text-white px-3">telelfono/Contacto</th>
+                               <th class="py-2 text-white text-end px-3">Deuda Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if proveedores %}
+                            {% for p in proveedores %}
+                                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                    <td class="fw-bold text-white py-2 px-3">📦 {{ p.nombre }}</td>
+                        
+                                    <td>
+                                        <span class="badge bg-dark border border-info text-info px-2 py-1">
+                                            {{ p.rubro if p.rubro else 'General' }}
+                                        </span>
+                                    </td>
+                        
+                                    <td class="text-white-50 px-3">{{ p.telefono if p.telefono else 'Sin teléfono' }}</td>
+    
+                                    <td class="text-end text-white fw-bold fs-6 px-3">
+                                        {% set deudas_activas = p.cuentas_pagar | selectattr('pagado', 'equalto', false) | list %}
+                                        {% if deudas_activas %}
+                                        <span class="text-danger">${{ "%.2f"|format(deudas_activas | map(attribute='monto') | sum) }} USD</span>
+                                        {% else %}
+                                            <span class="text-success">$0.00 (Solvente)</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-white-50 small py-4">No hay proveedores registrados.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="card card-custom p-4 shadow">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold text-neon-cyan m-0">👥 Cuentas por Cobrar</h5>
+                    <button class="btn btn-sm btn-outline-white text-white fw-bold px-3" data-bs-toggle="modal" data-bs-target="#modalNuevaDeuda">
+                        ➕ REGISTRAR DEUDA
+                    </button>
+                </div>
+            
+                <div class="overflow-y-auto" style="max-height: 350px;">
+                    {% if clientes %}
+                    {% for c in clientes if c.deuda_total > 0 %}
+                        <div class="p-3 mb-3 border border-secondary rounded bg-opacity-10 bg-light d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold text-white d-block fs-6">👤 {{ c.nombre }}</span>
+                                <small class="text-white-50">{{ c.telefono if c.telefono else 'Sin Teléfono' }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-white text-black fw-bold fs-6 d-block mb-2">${{ "%.2f"|format(c.deuda_total) }} USD</span>
+                                <button class="btn btn-xs btn-white fw-bold text-white py-0 px-2 small" style="font-size: 0.75rem;" data-bs-toggle="modal" data-bs-target="#modalGestionar{{ c.id }}">
+                                    Ver / Abonar
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% else %}
+                        <p class="text-center text-white-50 my-4 small">Todo controlado. No hay saldos pendientes por cobrar.</p>
+                    {% endif %}
+                </div>
+             </div>
+        </div>
+
+        <div class="modal fade" id="modalProveedor" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content card-custom text-white" style="border: 1px solid rgba(255,255,255,0.2);">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title fw-bold text-black">📝 Registrar Nuevo Proveedor</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ url_for('agregar_proveedor_finanzas') }}" method="POST">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label small text-white">Nombre del Proveedor / Empresa</label>
+                                <input type="text" name="nombre" class="form-control bg-secondary text-white border-0" placeholder="Ej: Distribuidora Polar" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-white">Teléfono de Contacto (Opcional)</label>
+                                <input type="text" name="telefono" class="form-control bg-secondary text-white border-0" placeholder="Ej: 0412-1234567">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-white">Rubro / Tipo de Mercancía</label>
+                                <input type="text" name="rubro" class="form-control bg-secondary text-white border-0" placeholder="Ej: Alimentos, Golosinas, Repuestos" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                            <button type="button" class="btn btn-sm btn-outline-white text-white" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-sm btn-outline-white text-white fw-bold px-3">Guardar Proveedor</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalNuevaDeuda" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content card-custom text-white" style="border: 1px solid rgba(255,255,255,0.2);">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title fw-bold text-info">📝 Cargar Cuenta por Cobrar</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                               <button class="nav-link active fw-bold me-2" id="pills-externa-tab" data-bs-toggle="pill" data-bs-target="#pills-externa" type="button" role="tab">💵 Deuda Externa / Efectivo</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                               <button class="nav-link fw-bold text-white border border-secondary" id="pills-productos-tab" data-bs-toggle="pill" data-bs-target="#pills-productos" type="button" role="tab">📦 Fiar Productos del Stock</button>
+                            </li>
+                        </ul>
+                
+                        <hr class="border-secondary">
+
+                        <div class="tab-content" id="pills-tabContent">
+                            <div class="tab-pane fade show active" id="pills-externa" role="tabpanel">
+                                <form action="{{ url_for('crear_deuda_externa') }}" method="POST">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-white-50">Nombre del Cliente</label>
+                                            <input type="text" name="nombre_cliente" class="form-control bg-secondary text-white border-0" placeholder="Ej: Carlos Mendoza" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-white-50">Teléfono (Opcional)</label>
+                                            <input type="text" name="telefono_cliente" class="form-control bg-secondary text-white border-0" placeholder="Ej: 0414-5556677">
+                                        </div>
+                                    </div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label small text-white-50">Monto Prestado / Pendiente</label>
+                                            <input type="number" step="0.01" name="monto_deuda" class="form-control bg-secondary text-white border-0" placeholder="0.00" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small text-white-50">Moneda</label>
+                                            <select name="moneda" class="form-select bg-secondary text-white border-0">
+                                                <option value="USD">Dólares ($)</option>
+                                                <option value="BS">Bolívares (Bs)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small text-white-50">Concepto / Descripción</label>
+                                            <input type="text" name="descripcion" class="form-control bg-secondary text-white border-0" placeholder="Ej: Préstamo para repuesto">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-info w-100 fw-bold text-dark mt-2">💾 REGISTRAR DEUDA EN ACCOUNT</button>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="pills-productos" role="tabpanel">
+                                <form action="{{ url_for('crear_deuda_productos') }}" method="POST">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-white-50">Nombre del Cliente</label>
+                                            <input type="text" name="nombre_cliente" class="form-control bg-secondary text-white border-0" placeholder="Ej: Juan Pérez" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small text-white-50">Teléfono</label>
+                                            <input type="text" name="telefono_cliente" class="form-control bg-secondary text-white border-0" placeholder="Ej: 0424-1112233">
+                                        </div>
+                                    </div>
+                            
+                                    <h6 class="text-white small mb-2 fw-bold">Selecciona el Producto a Fiar:</h6>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-8">
+                                            <select name="producto_id" class="form-select bg-secondary text-white border-0" required>
+                                                <option value="">Elegir del inventario...</option>
+                                                {% for prod in todos_productos if prod.stock > 0 %}
+                                                    <option value="{{ prod.id }}">{{ prod.nombre }} (Disp: {{ prod.stock }} un) — ${{ prod.precio_venta }} USD</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="number" name="cantidad" min="1" class="form-control bg-secondary text-white border-0" value="1" placeholder="Cant." required>
+                                        </div>
+                                    </div>
+                                    <p class="text-white-50 small mb-3">⚠️ Al procesar, el sistema rebajará las unidades seleccionadas del inventario activo automáticamente.</p>
+                                    <button type="submit" class="btn btn-outline-white text-white w-100 fw-bold text-dark">🛒 CONSOLIDAR FIADO DE MERCANCÍA</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% for c in clientes if c.deuda_total > 0 %}
+            <div class="modal fade" id="modalGestionar{{ c.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-md modal-dialog-centered">
+                    <div class="modal-content card-custom text-white" style="border: 1px solid rgba(255,255,255,0.2);">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title fw-bold text-white">Estado de Cuenta: {{ c.nombre }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="p-3 mb-3 text-center bg-dark rounded border border-white bg-opacity-40">
+                                <span class="text-white-50 small d-block">Saldo Pendiente Neto</span>
+                                <h3 class="fw-bold text-white m-0">${{ "%.2f"|format(c.deuda_total) }} USD</h3>
+                            </div>
+
+                            <form action="{{ url_for('abonar_deuda', cliente_id=c.id) }}" method="POST" class="border border-secondary p-3 rounded mb-3">
+                                <h6 class="fw-bold text-white mb-3 small">📝 Registrar Abono / Pago Parcial</h6>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-white-50">Monto que paga</label>
+                                        <input type="number" step="0.01" name="monto_abono" class="form-control bg-secondary text-white border-0" placeholder="0.00" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-white-50">Moneda de Entrega</label>
+                                        <select name="moneda_abono" class="form-select bg-secondary text-white border-0">
+                                            <option value="USD">💵 Dólares ($)</option>
+                                            <option value="BS">🇻🇪 Bolívares (Bs)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-outline-white text-white w-100 fw-bold mt-2">💸 GUARDAR ABONO E INYECTAR A CAJA</button>
+                            </form>
+
+                            <form action="{{ url_for('liquidar_todo', cliente_id=c.id) }}" method="POST" onsubmit="return confirm('¿Confirmas que el cliente saldó la totalidad de su cuenta en dólares?');">
+                                <button type="submit" class="btn btn-sm btn-outline-white text-white w-100 fw-bold">⚡ LIQUIDAR TODA LA CUENTA (PAGO COMPLETO)</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="modal fade" id="modalCuentaPagar" tabindex="-1" aria-labelledby="modalCuentaPagarLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-white" style="border: 1px solid #000000;">
+                    <div class="modal-header" style="border-bottom: 1px solid rgb(0, 0, 0);">
+                        <h5 class="modal-title" id="modalCuentaPagarLabel" style="color: #000000; font-weight: 700; letter-spacing: 1px;">REGISTRAR DEUDA MULTIMONEDA</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ url_for('agregar_cuenta_pagar') }}" method="POST">
+                        <div class="modal-body">
+          
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">SELECCIONE EL PROVEEDOR</label>
+                                <select name="proveedor_id" class="form-select bg-secondary text-white border-0" required>
+                                    <option value="" disabled selected>-- Elige un proveedor --</option>
+                                    {% for prov in proveedores %}
+                                        <option value="{{ prov.id }}">{{ prov.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">MONEDA DE LA DEUDA</label>
+                                <select name="moneda" id="monedaDeuda" class="form-select bg-secondary text-white border-0" onchange="toggleTasaDeuda()" required>
+                                    <option value="USD" selected>Dólares ($)</option>
+                                    <option value="BS">Bolívares (Bs)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">MONTO TOTAL DE LA DEUDA</label>
+                                <input type="number" step="0.01" name="monto_original" class="form-control bg-secondary text-white border-0" placeholder="0.00" required>
+                            </div>
+
+                            <div class="mb-3" id="contenedorTasaDeuda" style="display: none;">
+                                <label class="form-label" style="font-size: 0.85rem; color: #ffffff;">TASA DE CAMBIO ACORDADA (Bs por $)</label>
+                                <input type="number" step="0.01" name="tasa_factura" class="form-control bg-secondary text-white border-0" placeholder="Ej: 45.50">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">FECHA LÍMITE DE PAGO</label>
+                                <input type="date" name="fecha_limite" class="form-control bg-secondary text-white border-0">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">CONCEPTO / DESCRIPCIÓN</label>
+                                <textarea name="descripcion" class="form-control bg-secondary text-white border-0" rows="2" placeholder="Ej: Restante de la mercancía..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="border-top: 1px solid rgb(0, 0, 0);">
+                            <button type="button" class="btn btn-outline-white text-white" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-outline-white text-white" style="background: #000000; box-shadow: 0 0 10px rgb(0, 0, 0);">Adquirir Compromiso</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function toggleTasaDeuda() {
+                var selectMoneda = document.getElementById("monedaDeuda");
+                var contenedorTasa = document.getElementById("contenedorTasaDeuda");
+    
+                if (selectMoneda && contenedorTasa) {
+                if (selectMoneda.value === "BS") {
+                    contenedorTasa.style.display = "block"; // Muestra la casilla de tasa
+                    } else {
+                        contenedorTasa.style.display = "none";  // La oculta si es dólares
+                    }
+                }
+            }
+
+            function toggleTasaPago(id) {
+                var selectMoneda = document.getElementById("monedaPago" + id);
+                var contenedorTasa = document.getElementById("contenedorTasaPago" + id);
+                if (selectMoneda && contenedorTasa) {
+                if (selectMoneda.value === "BS") {
+                    contenedorTasa.style.display = "block";
+                    } else {
+                        contenedorTasa.style.display = "none";
+                    }
+                }
+            }
+
+            const tasaBaseSistema = parseFloat("{{ tasa_dolar }}") || 1.0;
+
+            function alternarMoneda() {
+                let moneda = document.getElementById('moneda_compra').value;
+                let inputTasa = document.getElementById('tasa_factura');
+    
+                if (moneda === 'USD') {
+                inputTasa.value = "1.0";
+                inputTasa.setAttribute('readonly', true);
+                } else {
+                    // Si es en Bs, le sugerimos la tasa general pero lo dejamos editar
+                    inputTasa.value = tasaBaseSistema;
+                    inputTasa.removeAttribute('readonly');
+                }
+                calcularPreciosRapido();
+            }
+
+            function calcularPreciosRapido() {
+                let totalFactura = parseFloat(document.getElementById('total_factura').value) || 0;
+                let stock = parseInt(document.getElementById('stock').value) || 0;
+                let porcentaje = parseFloat(document.getElementById('porcentaje_ganancia').value) || 0;
+                let moneda = document.getElementById('moneda_compra').value;
+                let tasaFactura = parseFloat(document.getElementById('tasa_factura').value) || 1.0;
+
+                if (stock <= 0) return;
+
+                // Calculamos el total en USD usando la tasa personalizada de la factura
+                let totalFacturaUSD = (moneda === 'BS') ? (totalFactura / tasaFactura) : totalFactura;
+    
+                let costoUnitario = totalFacturaUSD / stock;
+                let precioVenta = costoUnitario * (1 + (porcentaje / 100));
+
+                document.getElementById('preview_costo').innerText = `$${costoUnitario.toFixed(2)} USD`;
+                document.getElementById('preview_venta').innerText = `$${precioVenta.toFixed(2)} USD`;
+            }
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

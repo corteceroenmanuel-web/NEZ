@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NEZ - Selección de Módulo</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background-image: url("{{ url_for('static', filename='images/fondo2.png') }}"); 
+                background-size: cover;
+                background-attachment: fixed;
+                background-position: center;
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #ffffff;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            .card-menu {
+                background-color: rgba(0, 0, 0, 0.561) !important;
+                border: 1px solid rgb(0, 0, 0) !important;
+                backdrop-filter: blur(10px);
+                transition: all 0.3s ease-in-out;
+                text-decoration: none !important;
+            }
+            /* Efectos Neón reales al pasar el mouse */
+            .btn-ventas:hover {
+                border-color: #00f2fe !important;
+                box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+                transform: translateY(-5px);
+            }
+            .btn-finanzas:hover {
+                border-color: #f355ff !important;
+                box-shadow: 0 0 20px rgba(243, 85, 255, 0.5);
+                transform: translateY(-5px);
+            }
+            .text-neon-cyan { color: #000000; }
+            .text-neon-purple { color: #000000; }
+            .text-titulo { color: #1b295f}
+        </style>
+    </head> 
+    <body>
+
+        <div class="container text-center" style="max-width: 850px;">
+            <h1 class="fw-bold text-black mb-2" style="letter-spacing: 2px;">🚀 NEZ - SOFTWARE DE GESTIÓN</h1>
+            <p class="text-black mb-5">Selecciona el módulo administrativo que deseas operar</p>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-6">
+                    <a href="{{ url_for('index') }}" class="card card-menu btn-ventas h-100 p-4 text-start">
+                        <div class="card-body">
+                            <div class="fs-2 mb-3">🛒</div>
+                            <h3 class="fw-bold text-neon-cyan">Gestor de Ventas</h3>
+                            <p class="text-white small m-0 mt-2" style="line-height: 1.5;">
+                                Punto de venta rápido, facturación del mostrador, inventario activo y caja chica diaria.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-6">
+                    <a href="{{ url_for('finanzas') }}" class="card card-menu btn-finanzas h-100 p-4 text-start background-color: rgba(10, 14, 23, 0.45)">
+                        <div class="card-body">
+                            <div class="fs-2 mb-3">📈</div>
+                            <h3 class="fw-bold text-neon-purple">Gestor de Finanzas</h3>
+                            <p class="text-white small m-0 mt-2" style="line-height: 1.5;">
+                                Control contable macro, deudas a proveedores, cuentas por cobrar, margen de ganancias y auditorías.
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

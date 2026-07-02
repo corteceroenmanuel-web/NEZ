@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NEX - Configuración Inicial</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Rubik+80s+Fade&display=swap" rel="stylesheet">
+        <style>
+            body {
+                margin: 0; padding: 0; height: 100vh; width: 100vw;
+                background-image: url("{{ url_for('static', filename='images/fondo2.png') }}"); 
+                background-size: cover; background-position: center;
+                font-family: 'Rajdhani', sans-serif; color: #ffffff;
+                display: flex; align-items: flex-end; justify-content: center;
+                padding-bottom: 4rem;
+            }
+            .form-clean { width: 100%; max-width: 400px; }
+            .form-title { font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #000000; margin-bottom: 0.5rem; text-shadow: 0 0 10px rgba(243, 85, 255, 0.3); }
+            .form-subtitle { font-size: 0.95rem; color: rgb(0, 0, 0); margin-bottom: 2rem; }
+            .form-label-custom { display: block; font-size: 0.85rem; letter-spacing: 1.5px; color: rgb(0, 0, 0); margin-bottom: 0.4rem; font-weight: 600; }
+            .input-group-custom { margin-bottom: 1.5rem; }
+            .input-custom { width: 100%; background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 0.8rem 1rem; color: #ffffff !important; font-size: 1rem; transition: all 0.3s ease; }
+            .input-custom:focus { outline: none; border-color: #f355ff; box-shadow: 0 0 15px rgba(243, 85, 255, 0.25); background: rgba(255, 255, 255, 0.08) !important; }
+            .btn-nex-setup { width: 100%; background: linear-gradient(135deg, #f355ff 0%, #a124ff 100%); border: none; border-radius: 6px; padding: 0.85rem; color: #ffffff; font-weight: 700; font-size: 1rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(243, 85, 255, 0.3); }
+            .btn-nex-setup:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(243, 85, 255, 0.5); }
+            .alert-custom { background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff848f; font-size: 0.9rem; border-radius: 6px; padding: 0.6rem; margin-bottom: 1.5rem; text-align: center; }
+        </style>
+    </head>
+    <body>
+        <div class="form-clean">
+            <h3 class="form-title">Registro Maestro</h3>
+            <p class="form-subtitle">Asigne su usuario y clave real para inhabilitar la cuenta de fábrica.</p>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert-custom">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('configurar_dueno') }}" method="POST" autocomplete="off">
+                <div class="input-group-custom">
+                    <label class="form-label-custom">NUEVO USUARIO PROPIETARIO</label>
+                    <input type="text" name="nuevo_usuario" class="input-custom" placeholder="Ej: genesis_nex" required>
+                </div>
+                <div class="input-group-custom">
+                    <label class="form-label-custom">CONTRASEÑA CRIPTOGRÁFICA SEGURA</label>
+                    <input type="password" name="nuevo_password" class="input-custom" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-nex-setup">Resguardar Sistema</button>
+            </form>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NEZ - Bienvenido</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Rubik+80s+Fade&display=swap" rel="stylesheet">
+    
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                height: 100vh;
+                width: 100vw;
+                background-image: url("{{ url_for('static', filename='images/inicio.png') }}"); 
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                font-family: 'Rajdhani', sans-serif;
+                color: #ffffff;
+                overflow: hidden;
+            }
+
+            .split-container {
+                display: flex;
+                width: 100%;
+                height: 100%;
+            }
+
+           .brand-side {
+                flex: 1.2;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start; /* Todo arriba */
+                padding-top: 5rem;
+                padding-left: 5rem;
+                animation: fadeInSimple 1s ease-out forwards;
+            }
+
+       
+            .brand-text-group {
+                display: flex;
+                flex-direction: column;
+                gap: 0px; /* Súper pegados */
+            }
+
+        
+            .brand-logo {
+                font-family: 'Rubik 80s Fade', system-ui;
+                font-size: 15rem; /* Aumentamos el tamaño */
+                line-height: 0.9;
+                margin: 0;
+                color: #ffffff; /* Letras totalmente blancas */
+                text-transform: uppercase;
+                letter-spacing: -2px;
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            }
+
+            .brand-slogan {
+                font-size: 4rem; /* Más grande y visible */
+                font-weight: 700;
+                letter-spacing: -5px;
+                line-height: 1.1;
+                color: #594e4e87;
+                max-width: 450px;
+                margin-top: -0.5rem; /* Margen negativo para pegarlo al logo */
+                text-transform: uppercase;
+            }
+
+        
+            .login-side {
+                flex: 1;
+                display: flex;
+                align-items: flex-end; /* Lo empuja hacia abajo */
+                justify-content: center;
+                padding-bottom: 1rem; /* Distancia del piso */
+                padding-right: 0rem;
+                animation: fadeInSimple 1.2s ease-out forwards;
+            }
+
+            .form-clean {
+                width: 100%;
+                max-width: 360px;
+            }
+
+            .form-title {
+                font-size: 1.8rem;
+                font-weight: 700;
+                letter-spacing: 5px;
+                text-transform: uppercase;
+                color: #b4c6ff;
+                margin-bottom: 0.3rem;
+                text-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+            }
+
+            .form-label-custom {
+                display: block;
+                font-size: 0.85rem;
+                letter-spacing: 1.5px;
+                color: rgba(255, 255, 255, 0.6);
+                margin-bottom: 0.2rem;
+                font-weight: 600;
+            }
+
+            .input-group-custom {
+                margin-bottom: 1.5rem;
+            }
+
+            .input-custom {
+                width: 100%;
+                background: rgba(255, 255, 255, 0.05) !important;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 6px;
+                padding: 0.8rem 1rem;
+                color: #ffffff !important;
+                font-size: 1rem;
+                font-family: 'Rajdhani', sans-serif;
+                transition: all 0.3s ease;
+            }
+
+            .input-custom:focus {
+                outline: none;
+                border-color: #00f2fe;
+                box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
+                background: rgba(255, 255, 255, 0.08) !important;
+            }
+
+            .btn-nex-clean {
+                width: 100%;
+                background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+                border: none;
+                border-radius: 6px;
+                padding: 0.85rem;
+                color: #0a0e17;
+                font-weight: 700;
+                font-size: 1rem;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+            }
+
+            .btn-nex-clean:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5), 0 0 10px #f355ff;
+                background: linear-gradient(135deg, #00f2fe 0%, #f355ff 100%);
+                color: #ffffff;
+            }
+
+            .links-container {
+                margin-top: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.4rem;
+                text-align: left;
+            }
+
+            .link-custom {
+                color: rgba(255, 255, 255, 0.4);
+                text-decoration: none;
+                font-size: 0.85rem;
+                transition: all 0.3s ease;
+                letter-spacing: 0.5px;
+            }
+
+            .link-custom:hover {
+                color: #00f2fe;
+                text-shadow: 0 0 8px rgba(0, 242, 254, 0.4);
+            }
+
+            .link-special {
+                color: #f355ff;
+            }
+
+        
+            .alert-custom {
+                background: rgba(220, 53, 69, 0.2);
+                border: 1px solid rgba(220, 53, 69, 0.4);
+                color: #ff848f;
+                font-size: 0.9rem;
+                border-radius: 6px;
+                padding: 0.6rem;
+                margin-bottom: 1.5rem;
+                text-align: center;
+            }
+
+            @keyframes fadeInSimple {
+                0% { opacity: 0; transform: translateY(10px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+
+            @media (max-width: 768px) {
+                .split-container { flex-direction: column; }
+                .brand-side { padding: 2rem; align-items: center; text-align: center; }
+                .brand-logo { font-size: 4.5rem; }
+                .brand-slogan { font-size: 1.5rem; margin-top: 0; }
+                .login-side { justify-content: center; padding-bottom: 3rem; }
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="split-container">
+        
+            <div class="brand-side">
+                <div class="brand-text-group">
+                    <h1 class="text-dark brand-logo">NEZ</h1>
+                    <h2 class="brand-slogan">TEN UN CONTROL FINANCIERO PARA TU NEGOCIO.</h2>
+                </div>
+            </div>
+
+            <div class="login-side">
+                <div class="form-clean">
+                
+                    <h3 class=" md-10 form-title">Autenticación</h3>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert-custom">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form action="{{ url_for('bienvenida') }}" method="POST" autocomplete="off">
+
+                        <div class="input-group-custom">
+                            <label class="form-label-custom">OPERADOR / USUARIO</label>
+                            <input type="text" name="usuario" class="input-custom" placeholder="Nombre de usuario" required>
+                        </div>
+
+                        <div class="input-group-custom">
+                            <label class="form-label-custom">CONTRASEÑA DE SEGURIDAD</label>
+                            <input type="password" name="password" class="input-custom" placeholder="••••••••" required>
+                        </div>
+
+                        <button type="submit" class="btn-nex-clean">Ingresar Core</button>
+                    </form>
+
+                    <div class="links-container ">
+                        <a href="#" class="link-custom" data-bs-toggle="modal" data-bs-target="#modalOlvido">¿Olvidó su contraseña?</a>
+                        <a href="#" class="link-custom link-special" data-bs-toggle="modal" data-bs-target="#modalPrimerInicio">✨ Configuración de primer ingreso</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="modal fade" id="modalOlvido" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-white" style="background: rgba(15, 20, 32, 0.95); border: 1px solid rgba(0, 242, 254, 0.3); backdrop-filter: blur(10px); border-radius: 8px;">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold text-info">🔑 Recuperación de Acceso</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body py-2">
+                        <p class="text-white-50 small m-0">Para restablecer claves maestras por resguardo de datos, solicite asistencia al administrador para un reinicio manual en consola.</p>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="modal">Entendido</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalPrimerInicio" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-white" style="background: rgba(15, 20, 32, 0.95); border: 1px solid rgba(243, 85, 255, 0.3); backdrop-filter: blur(10px); border-radius: 8px;">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold text-warning">🚀 Credenciales por Defecto</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body py-2">
+                        <p class="text-white-50 small">Si es la primera vez que inicia el sistema, ingrese con:</p>
+                        <div class="p-2 my-2 rounded text-center font-monospace" style="background: rgba(0,0,0,0.4); border: 1px dashed rgba(255,255,255,0.2); color: #00f2fe; font-size: 0.9rem;">
+                            Usuario: <span class="text-white fw-bold">admin</span> | Clave: <span class="text-white fw-bold">admin</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-sm btn-warning fw-bold text-dark" data-bs-modal="modal" data-bs-dismiss="modal">Ir al Login</button>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>
