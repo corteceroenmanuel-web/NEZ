@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>NEZ - GESTOR FINANCIERO</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='img/cohete.ico') }}" type="image/x-icon">
         <style>
             body {
                 background-image: url("{{ url_for('static', filename='images/fondo1.png') }}"); 
@@ -72,7 +73,109 @@
             <div class="col-md-6">
                 <div class="card card-custom col-md-12 p-4 mb-5 shadow ">
                     <h5 class="fw-bold text-neon-cyan mb-4">📦 Entrada de Mercancía e Inventario Inteligente</h5>
-                    <form action="{{ url_for('agregar_producto_finanzas') }}" method="POST">
+                    <button class="btn btn-outline-info fw-bold mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#panelMultiplesProductos" aria-expanded="false">
+                        📦 Registrar Múltiples Productos (Una Sola Factura)
+                    </button>
+
+                    <div class="collapse" id="panelMultiplesProductos">
+                        <div class="card card-custom p-4 text-white" style="background-color: #1a1d24; border: 1px solid rgba(255,255,255,0.1);">
+                            <h4 class="fw-bold text-info mb-3">🧾 Nueva Factura por Lote</h4>
+                            <form action="{{ url_for('agregar_productos_lote') }}" method="POST">
+            
+                                <div class="row g-3 mb-4 p-3 rounded" style="background-color: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
+                                    <div class="col-md-3">
+                                        <label class="small text-white-50">Moneda Factura</label>
+                                        <select name="moneda_compra" class="form-select bg-secondary text-white border-0" required>
+                                            <option value="USD">Dólares ($)</option>
+                                            <option value="BS">Bolívares (Bs)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="small text-white-50">Tasa Factura</label>
+                                        <input type="number" step="0.01" name="tasa_factura" class="form-control bg-secondary text-white border-0" value="1.0" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="small text-white-50">¿Incluye IVA (16%)?</label>
+                                        <select name="incluye_iva" class="form-select bg-secondary text-white border-0">
+                                            <option value="false">No</option>
+                                            <option value="true">Sí</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="small text-white-50">Proveedor</label>
+                                        <select name="proveedor_id" class="form-select bg-secondary text-white border-0">
+                                        <option value="">Ninguno / General</option>
+                                        {% for prov in proveedores %}
+                                            <option value="{{ prov.id }}">{{ prov.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <h6 class="fw-bold text-white mb-2">📦 Renglones de la Factura</h6>
+                            <div id="contenedor-items-factura">
+                                <div class="row g-2 mb-2 item-factura align-items-end">
+                                    <div class="col-md-4">
+                                        <input type="text" name="nombre[]" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="Nombre del Producto" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" name="stock[]" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="Stock" min="1" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="number" step="0.01" name="total_item[]" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="Costo total renglón" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" step="0.1" name="porcentaje_ganancia[]" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="% Ganancia" required>
+                                    </div>
+                                    <div class="col-md-1 text-center">
+                                        <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="eliminarFila(this)">❌</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-outline-success mt-2 fw-bold" onclick="agregarNuevaFila()">
+                                ➕ Añadir Otro Producto a la Factura
+                            </button>
+
+                            <hr class="text-white-50 my-4">
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <label class="small text-white-50">Tipo de Pago</label>
+                                        <select name="tipo_pago" id="tipo_pago_lote" class="form-select bg-secondary text-white border-0" onchange="alternarFinanciamientoLote()" required>
+                                            <option value="contado">💸 Al Contado</option>
+                                            <option value="credito">⏳ A Crédito (Financiado)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mt-2 d-none" id="campos_credito_lote">
+                                    <div class="col-md-3">
+                                        <label class="small text-white-50">Monto Inicial Pagado</label>
+                                        <input type="number" step="0.01" name="monto_inicial" class="form-control bg-secondary text-white border-0" value="0.0">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="small text-white-50">Monto Restante Debiendo</label>
+                                        <input type="number" step="0.01" name="monto_restante" class="form-control bg-secondary text-white border-0" value="0.0">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="small text-white-50">Financista</label>
+                                        <select name="financista" class="form-select bg-secondary text-white border-0">
+                                            <option value="Cashea">Cashea</option>
+                                            <option value="Proveedor">Proveedor Directo</option>
+                                            <option value="Banco">Banco / Tarjeta</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="small text-white-50">Fecha Límite de Pago</label>
+                                        <input type="date" name="fecha_vencimiento" class="form-control bg-secondary text-white border-0">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-info text-dark fw-bold w-100 mt-4 py-2">💾 PROCESAR FACTURA COMPLETA E INYECTAR EN LA BASE DE DATOS</button>
+                            </form>
+                        </div>
+                    </div>
+                    <form action="{{ url_for('agregar_producto') }}" method="POST">
                         <div class="mb-3">
                             <label class="form-label small text-white">Nombre del Producto</label>
                             <input type="text" name="nombre" class="form-control bg-secondary text-white border-0" placeholder="Ej: Harina Pan" required>
@@ -94,8 +197,8 @@
                                 <label class="form-label small text-white">Proveedor</label>
                                 <select name="proveedor_id" class="form-select bg-secondary text-white border-0" required>
                                     <option value="">Selecciona...</option>
-                                    {% for p in proveedores %}
-                                        <option value="{{ p.id }}">{{ p.nombre }}</option>
+                                    {% for proveedor in proveedores %}
+                                        <option value="{{ proveedor.id }}">{{ proveedor.nombre }}</option>
                                     {% endfor %}
                               </select>
                             </div>
@@ -113,6 +216,50 @@
                             <div class="col-md-4">
                                 <label class="form-label small text-white">% Margen de Ganancia</label>
                                 <input type="number" step="0.1" name="porcentaje_ganancia" id="porcentaje_ganancia" class="form-control bg-secondary text-white border-0" placeholder="Ej: 30" oninput="calcularPreciosRapido()" required>
+                            </div>
+                            <div class="mb-3 form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="incluye_iva" name="incluye_iva" value="true">
+                                <label class="form-check-label text-white" for="incluye_iva">
+                                    ¿Cobran IVA? (Suma +16% al total de la factura)
+                                </label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-white fw-bold">Método de Adquisición</label>
+                                    <select class="form-select bg-dark text-white border-secondary" id="tipo_pago" name="tipo_pago" onchange="toggleCredito()">
+                                        <option value="contado">Al Contado (Pago Completo)</option>
+                                        <option value="credito">A Crédito (Cashea / Banco / Proveedor)</option>
+                                    </select>
+                            </div>
+
+                            <div id="seccion_credito" style="display: none;" class="p-3 mb-3 rounded border border-info" style="background-color: rgba(0, 242, 254, 0.05);">
+                                <h6 class="text-info fw-bold mb-3">📋 Detalles del Financiamiento</h6>
+    
+                                <div class="mb-3">
+                                    <label class="form-label text-white fw-bold">¿Quién financia este crédito?</label>
+                                    <select class="form-select bg-dark text-white border-secondary" name="financista">
+                                        <option value="Cashea">Cashea</option>
+                                        <option value="Proveedor">El mismo Proveedor del producto</option>
+                                        <option value="Banco">Banco / Tarjeta de Crédito</option>
+                                        <option value="Otro">Otro (Prestamista / Tercero)</option>
+                                    </select>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-white">Monto Inicial Pagado</label>
+                                        <input type="number" step="0.01" class="form-control bg-dark text-white border-secondary" id="monto_inicial" name="monto_inicial" value="0.0" oninput="calcularRestante()">
+                                    </div>
+        
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-white">Monto Restante Debiendo</label>
+                                        <input type="number" step="0.01" class="form-control bg-dark text-white border-secondary" id="monto_restante" name="monto_restante" value="0.0">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label text-white">Fecha Tope de Pago</label>
+                                    <input type="date" class="form-control bg-dark text-white border-secondary" name="fecha_vencimiento">
+                                </div>
                             </div>
                         </div>
                     
@@ -333,7 +480,7 @@
 
         <div class="modal fade" id="modalNuevaDeuda" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content card-custom text-white" style="border: 1px solid rgba(255,255,255,0.2);">
+                <div class="modal-content card-custom text-white" style="background-color: #1a1d24; border: 1px solid rgba(255,255,255,0.2);">
                     <div class="modal-header border-secondary">
                         <h5 class="modal-title fw-bold text-info">📝 Cargar Cuenta por Cobrar</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -341,13 +488,12 @@
                     <div class="modal-body">
                         <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
                             <li class="nav-item" role="presentation">
-                               <button class="nav-link active fw-bold me-2" id="pills-externa-tab" data-bs-toggle="pill" data-bs-target="#pills-externa" type="button" role="tab">💵 Deuda Externa / Efectivo</button>
+                                <button class="nav-link active fw-bold me-2" id="pills-externa-tab" data-bs-toggle="pill" data-bs-target="#pills-externa" type="button" role="tab">💵 Deuda Externa / Efectivo</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                               <button class="nav-link fw-bold text-white border border-secondary" id="pills-productos-tab" data-bs-toggle="pill" data-bs-target="#pills-productos" type="button" role="tab">📦 Fiar Productos del Stock</button>
+                                <button class="nav-link fw-bold text-white border border-secondary" id="pills-productos-tab" data-bs-toggle="pill" data-bs-target="#pills-productos" type="button" role="tab">📦 Fiar Productos del Stock</button>
                             </li>
                         </ul>
-                
                         <hr class="border-secondary">
 
                         <div class="tab-content" id="pills-tabContent">
@@ -396,64 +542,132 @@
                                             <input type="text" name="telefono_cliente" class="form-control bg-secondary text-white border-0" placeholder="Ej: 0424-1112233">
                                         </div>
                                     </div>
-                            
-                                    <h6 class="text-white small mb-2 fw-bold">Selecciona el Producto a Fiar:</h6>
-                                    <div class="row g-2 mb-3">
-                                        <div class="col-md-8">
-                                            <select name="producto_id" class="form-select bg-secondary text-white border-0" required>
-                                                <option value="">Elegir del inventario...</option>
-                                                {% for prod in todos_productos if prod.stock > 0 %}
-                                                    <option value="{{ prod.id }}">{{ prod.nombre }} (Disp: {{ prod.stock }} un) — ${{ prod.precio_venta }} USD</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="number" name="cantidad" min="1" class="form-control bg-secondary text-white border-0" value="1" placeholder="Cant." required>
+                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="text-white small mb-0 fw-bold">Lista de Productos a Fiar:</h6>
+                                        <button type="button" class="btn btn-xs btn-outline-info fw-bold" onclick="agregarFilaProducto()">➕ Añadir Otro Producto</button>
+                                    </div>
+
+                                    <div id="contenedor-productos-fiados">
+                                        <div class="row g-2 mb-2 fila-producto">
+                                            <div class="col-md-7">
+                                                <select name="productos[]" class="form-select bg-secondary text-white border-0 select-producto" onchange="recalcularTotalesFiado()" required>
+                                                    <option value="" data-precio="0">Elegir del inventario...</option>
+                                                        {% for prod in todos_productos if prod.stock > 0 %}
+                                                            <option value="{{ prod.id }}" data-precio="{{ prod.precio_venta }}">{{ prod.nombre }} (Disp: {{ prod.stock }} un) — ${{ prod.precio_venta }} USD</option>
+                                                        {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <input type="number" name="cantidades[]" min="1" class="form-control bg-secondary text-white border-0 cantidad-producto" value="1" oninput="recalcularTotalesFiado()" required>
+                                            </div>
+                                            <div class="col-md-2 text-center">
+                                                <button type="button" class="btn btn-outline-danger w-100" onclick="removerFilaProducto(this)">❌</button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <p class="text-white-50 small mb-3">⚠️ Al procesar, el sistema rebajará las unidades seleccionadas del inventario activo automáticamente.</p>
-                                    <button type="submit" class="btn btn-outline-white text-white w-100 fw-bold text-dark">🛒 CONSOLIDAR FIADO DE MERCANCÍA</button>
+
+                                    <div class="p-3 my-3 rounded" style="background-color: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.1);">
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <small class="text-white-50 d-block">TOTAL EN DÓLARES</small>
+                                                <span class="text-warning fw-bold fs-5" id="total-usd-fiado">$0.00 USD</span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-white-50 d-block">TOTAL EN BOLÍVARES</small>
+                                                <span class="text-info fw-bold fs-5" id="total-bs-fiado">Bs. 0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-white-50 small mb-3">⚠️ Al procesar, el sistema rebajará automáticamente las unidades del stock y consolidará la cuenta unificada.</p>
+                                    <button type="submit" class="btn btn-info w-100 fw-bold text-dark">🛒 CONSOLIDAR FIADO DE MERCANCÍA</button>
                                 </form>
                             </div>
                         </div>
                     </div>
-                </div>
+               </div>
             </div>
         </div>
-
+        
         {% for c in clientes if c.deuda_total > 0 %}
             <div class="modal fade" id="modalGestionar{{ c.id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-md modal-dialog-centered">
-                    <div class="modal-content card-custom text-white" style="border: 1px solid rgba(255,255,255,0.2);">
+                    <div class="modal-content card-custom text-white" style="background-color: #1a1d24; border: 1px solid rgba(255,255,255,0.2);">
                         <div class="modal-header border-secondary">
                             <h5 class="modal-title fw-bold text-white">Estado de Cuenta: {{ c.nombre }}</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="p-3 mb-3 text-center bg-dark rounded border border-white bg-opacity-40">
+                            <div class="p-3 mb-3 text-center bg-dark rounded border border-info bg-opacity-40">
                                 <span class="text-white-50 small d-block">Saldo Pendiente Neto</span>
-                                <h3 class="fw-bold text-white m-0">${{ "%.2f"|format(c.deuda_total) }} USD</h3>
+                                <h3 class="fw-bold text-warning m-0">${{ "%.2f"|format(c.deuda_total) }} USD</h3>
+                                <small class="text-info fw-bold d-block mt-1">
+                                    Bs. {{ "%.2f"|format(c.deuda_total * tasa_dolar) }}
+                                </small>
+                            </div>
+
+                            <div class="p-3 mb-3 rounded" style="background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
+                                <h6 class="fw-bold text-info small mb-2">📋 Historial de la Deuda</h6>
+
+                                <div class="bg-dark p-3 rounded text-white border border-secondary" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;">
+        
+                                {% if c.descripcion is defined and c.descripcion %}
+                                    <pre class="m-0 text-white" style="white-space: pre-wrap; font-family: inherit;">{{ c.descripcion }}</pre>
+        
+                                {% elif c.notas is defined and c.notas %}
+                                    <pre class="m-0 text-white" style="white-space: pre-wrap; font-family: inherit;">{{ c.notas }}</pre>
+            
+                                {% elif c.deudas is defined and c.deudas %}
+                                    {% for d in c.deudas %}
+                                    {% if d.descripcion %}
+                                        <pre class="m-0 text-white mb-1" style="white-space: pre-wrap; font-family: inherit;">{{ d.descripcion }}</pre>
+                                    {% endif %}
+                                {% endfor %}
+            
+                                {% else %}
+                                    <span class="text-white-50">Sin especificaciones de artículos en el registro.</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                            <div class="border border-info p-3 rounded mb-3" style="background-color: rgba(0, 242, 254, 0.02);">
+                                <h6 class="fw-bold text-info mb-2 small">➕ Anexar más productos a esta cuenta</h6>
+                                <form action="{{ url_for('anexar_productos_deuda', cliente_id=c.id) }}" method="POST">
+                                    <div class="row g-2">
+                                        <div class="col-8">
+                                            <select name="producto_id" class="form-select form-select-sm bg-secondary text-white border-0" required>
+                                                <option value="">Elegir producto del stock...</option>
+                                                {% for prod in todos_productos if prod.stock > 0 %}
+                                                    <option value="{{ prod.id }}">{{ prod.nombre }} (${{ prod.precio_venta }} USD)</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" name="cantidad" min="1" class="form-control form-control-sm bg-secondary text-white border-0" value="1" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-info text-dark w-100 fw-bold mt-2">🔄 ACTUALIZAR DEUDA Y REBAJAR STOCK</button>
+                                </form>
                             </div>
 
                             <form action="{{ url_for('abonar_deuda', cliente_id=c.id) }}" method="POST" class="border border-secondary p-3 rounded mb-3">
-                                <h6 class="fw-bold text-white mb-3 small">📝 Registrar Abono / Pago Parcial</h6>
+                                <h6 class="fw-bold text-white mb-2 small">📝 Registrar Abono / Pago Parcial</h6>
                                 <div class="row g-2 mb-2">
                                     <div class="col-md-6">
-                                        <label class="form-label small text-white-50">Monto que paga</label>
-                                        <input type="number" step="0.01" name="monto_abono" class="form-control bg-secondary text-white border-0" placeholder="0.00" required>
+                                        <input type="number" step="0.01" name="monto_abono" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="Monto 0.00" required>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label small text-white-50">Moneda de Entrega</label>
-                                        <select name="moneda_abono" class="form-select bg-secondary text-white border-0">
+                                        <select name="moneda_abono" class="form-select form-select-sm bg-secondary text-white border-0">
                                             <option value="USD">💵 Dólares ($)</option>
                                             <option value="BS">🇻🇪 Bolívares (Bs)</option>
                                         </select>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-outline-white text-white w-100 fw-bold mt-2">💸 GUARDAR ABONO E INYECTAR A CAJA</button>
+                                <button type="submit" class="btn btn-sm btn-outline-white text-white w-100 fw-bold">💸 GUARDAR ABONO E INYECTAR A CAJA</button>
                             </form>
 
-                            <form action="{{ url_for('liquidar_todo', cliente_id=c.id) }}" method="POST" onsubmit="return confirm('¿Confirmas que el cliente saldó la totalidad de su cuenta en dólares?');">
+                            <form action="{{ url_for('liquidar_todo', cliente_id=c.id) }}" method="POST" onsubmit="return confirm('¿Confirmas que el cliente saldó la totalidad de su cuenta?');">
                                 <button type="submit" class="btn btn-sm btn-outline-white text-white w-100 fw-bold">⚡ LIQUIDAR TODA LA CUENTA (PAGO COMPLETO)</button>
                             </form>
                         </div>
@@ -579,6 +793,123 @@
 
                 document.getElementById('preview_costo').innerText = `$${costoUnitario.toFixed(2)} USD`;
                 document.getElementById('preview_venta').innerText = `$${precioVenta.toFixed(2)} USD`;
+            }
+
+            function toggleCredito() {
+                const tipoPago = document.getElementById('tipo_pago').value;
+                const seccion = document.getElementById('seccion_credito');
+    
+                if (tipoPago === 'credito') {
+                seccion.style.display = 'block';
+                calcularRestante();
+                } else {
+                    seccion.style.display = 'none';
+                }
+            }
+
+            function calcularRestante() {
+                let totalFactura = parseFloat(document.getElementsByName('total_factura')[0].value) || 0.0;
+                const incluyeIva = document.getElementById('incluye_iva')?.checked;
+                if (incluyeIva) {
+                    totalFactura = totalFactura * 1.16;
+                }
+    
+                const inicial = parseFloat(document.getElementById('monto_inicial').value) || 0.0;
+                const restante = Math.max(0, totalFactura - inicial);
+    
+                document.getElementById('monto_restante').value = restante.toFixed(2);
+            }
+
+
+            document.getElementsByName('total_factura')[0].addEventListener('input', calcularRestante);
+            document.getElementById('incluye_iva')?.addEventListener('change', calcularRestante);
+
+            const TASA_CAMBIO = parseFloat("{{ tasa_dolar }}") || 1.0;
+
+            function agregarFilaProducto() {
+                const contenedor = document.getElementById('contenedor-productos-fiados');
+                const primeraFila = document.querySelector('.fila-producto');
+                const nuevaFila = primeraFila.cloneNode(true);
+
+                nuevaFila.querySelector('.select-producto').value = "";
+                nuevaFila.querySelector('.cantidad-producto').value = 1;
+
+                contenedor.appendChild(nuevaFila);
+                recalcularTotalesFiado();
+            }
+
+            function removerFilaProducto(boton) {
+                const filas = document.querySelectorAll('.fila-producto');
+                if (filas.length > 1) {
+                    boton.closest('.fila-producto').remove();
+                    recalcularTotalesFiado();
+                } else {
+                    alert("La cuenta debe tener al menos un producto.");
+                    }
+            }
+
+            function recalcularTotalesFiado() {
+                let totalUSD = 0.0;
+                const filas = document.querySelectorAll('.fila-producto');
+    
+                filas.forEach(fila => {
+                    const select = fila.querySelector('.select-producto');
+                    const cantidadInput = fila.querySelector('.cantidad-producto');
+        
+                    const optionSeleccionada = select.options[select.selectedIndex];
+                    const precio = parseFloat(optionSeleccionada.getAttribute('data-precio')) || 0.0;
+                    const cantidad = parseInt(cantidadInput.value) || 0;
+        
+                    totalUSD += (precio * cantidad);
+                });
+    
+                let totalBS = totalUSD * TASA_CAMBIO;
+    
+                document.getElementById('total-usd-fiado').innerText = `$${totalUSD.toFixed(2)} USD`;
+                document.getElementById('total-bs-fiado').innerText = `Bs. ${totalBS.toFixed(2)}`;
+            }
+
+            function agregarNuevaFila() {
+                const contenedor = document.getElementById('contenedor-items-factura');
+                const nuevaFila = document.createElement('div');
+                nuevaFila.className = 'row g-2 mb-2 item-factura align-items-end';
+                nuevaFila.innerHTML = `
+                <div class="col-md-4">
+                    <input type="text" name="nombre[]" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="Nombre del Producto" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="stock[]" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="Stock" min="1" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="number" step="0.01" name="total_item[]" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="Costo total renglón" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" step="0.1" name="porcentaje_ganancia[]" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="% Ganancia" required>
+                </div>
+                <div class="col-md-1 text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="eliminarFila(this)">❌</button>
+                </div>
+                `;
+                contenedor.appendChild(nuevaFila);
+            }
+
+            function eliminarFila(boton) {
+                const filas = document.getElementsByClassName('item-factura');
+                if(filas.length > 1) {
+                    boton.closest('.item-factura').remove();
+                } else {
+                    alert("La factura debe tener al menos un producto.");
+                }
+            }
+
+            function alternarFinanciamientoLote() {
+                const tipo = document.getElementById('tipo_pago_lote').value;
+                const camposCredito = document.getElementById('campos_credito_lote');
+                if (tipo === 'credito') {
+                    camposCredito.classList.remove('d-none');
+                } else {
+                    camposCredito.classList.add('d-none');
+                }
             }
         </script>
 
